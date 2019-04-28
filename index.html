@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script
+  src="https://code.jquery.com/jquery-3.4.0.min.js"
+  integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg="
+  crossorigin="anonymous"></script>
+</head>
+<body>
+<p id="demo"></p>
+<script>
+ 	var pagenum = 0;
+ 	var templist = new Array();
+ 	var list = new Array();
+
+ 	function getData(pagenum) {
+ 		return $.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent('https://www.profesia.sk/praca/informacne-technologie/?page_num=') + pagenum + '&callback=?', function(data){
+ 			return data;
+		});
+ 	}
+
+ 	function getTemplist(pagenum) {
+		return getData(pagenum).then(function(data){
+			return $(data.contents).find("li[class*='list-row']");
+ 		});
+ 	}
+
+	function compareFunction(a, b) {
+		return ('' + $(a).text()).localeCompare($(b).text());
+	}
+
+ 	do {
+		pagenum++;
+		getTemplist(pagenum).then(function(data){
+			h2 = $(data).find("h2");
+			employer = $(data).find("span[class='employer']");
+			loc = $(data).find("span[class='job-location']");
+			for(var i=0; i<h2.length; i++) {
+				var yello = h2[i].innerHTML;
+				list.push(yello.replace('href="', 'href="http://www.profesia.sk') + " : : " + employer[i].innerText + " : : " + loc[i].innerText);
+			}
+			if(h2.length == 0) return;
+
+			list.sort(compareFunction);
+
+			var together = "";
+			for(var i=0; i<list.length; i++) {
+				together += list[i] + "<br />";
+			}
+			document.getElementById("demo").innerHTML = together;
+		});
+	} while (pagenum < 200);
+</script>
+</body>
+</html>
